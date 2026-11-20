@@ -1,122 +1,60 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Home from './pages/Home';
+
+const AESTHETIC_CAPTIONS = [
+  "solo quiero dormir todo el día...",
+  "vibra de domingo por la tarde",
+  "mirando la nada, pensando en todo",
+  "2014 soft grunge cat aesthetic",
+  "un cafecito y un michi"
+];
+
+const TAG_SETS = [
+  ['catcore', 'aesthetic', 'soft'],
+  ['michis', 'tumblr2014', 'vibes'],
+  ['grumpy', 'mood', 'photography'],
+  ['cute', 'lofi', 'chill']
+];
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [cats, setCats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Requisito 4: Consumo de API externa en App.jsx con fetch, useEffect y console.log
+  useEffect(() => {
+    fetch('https://api.thecatapi.com/v1/images/search?limit=15')
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Datos obtenidos de The Cat API:", data);
+        
+        const formatted = data.map((item, idx) => ({
+          id: item.id,
+          url: item.url,
+          caption: AESTHETIC_CAPTIONS[idx % AESTHETIC_CAPTIONS.length],
+          tags: TAG_SETS[idx % TAG_SETS.length],
+          notes: Math.floor(Math.random() * 900) + 50
+        }));
+        
+        setCats(formatted);
+        setLoading(false);
+      })
+      .catch((error) => console.error("Error al consumir la API:", error));
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <BrowserRouter>
+      <Header onSearch={setSearchTerm} />
+      <Routes>
+        <Route 
+          path="/" 
+          element={<Home cats={cats} loading={loading} searchTerm={searchTerm} />} 
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
